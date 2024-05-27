@@ -28,7 +28,7 @@ namespace Seion.BatchHollower
                 var inputFile = fi.FullName;
                 var outputFile = GetOutputFilepath(inputFile, outputPath);
 
-                if (!inputFile.Contains(".dll") || _blacklist.Contains(inputFile)) 
+                if (fi.Extension != ".dll" || _blacklist.Contains(fi.Name)) 
                 {
                     Console.WriteLine($"Skipping {inputFile}...");    
                     continue;
@@ -41,12 +41,12 @@ namespace Seion.BatchHollower
 
         static string GetOutputFilepath(string inputFile, string outputPath)
         {
-            var fileName = Path.GetFileNameWithoutExtension(inputFile);
+            var fileName = Path.GetFileName(inputFile);
 
             return Path.Combine(
                 Environment.CurrentDirectory,
                 outputPath,
-                $"{fileName}-hollowed.dll");
+                fileName);
         }
     }
 }
