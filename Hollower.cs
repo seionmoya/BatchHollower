@@ -23,14 +23,12 @@ namespace Seion.BatchHollower
 
         public AssemblyDefinition GetAssemblyDefinition(string inputFile)
         {
-            var inputPath = Path.GetDirectoryName(inputFile);
             var resolver = new DefaultAssemblyResolver();
-            resolver.AddSearchDirectory(inputPath);
+            var parameters = new ReaderParameters();
+            var inputPath = Path.GetDirectoryName(inputFile);
 
-            var parameters = new ReaderParameters
-            {
-                AssemblyResolver = resolver
-            };
+            resolver.AddSearchDirectory(inputPath);            
+            parameters.AssemblyResolver = resolver;
 
             return AssemblyDefinition.ReadAssembly(inputFile, parameters);
         }
@@ -77,11 +75,13 @@ namespace Seion.BatchHollower
 
         public void HollowMethod(MethodDefinition method)
         {
-            if (method.HasBody)
+            if (!method.HasBody)
             {
-                method.Body.Instructions.Clear();
-                method.Body.Variables.Clear();
+                return;
             }
+
+            method.Body.Instructions.Clear();
+            method.Body.Variables.Clear();
         }
     }
 }
