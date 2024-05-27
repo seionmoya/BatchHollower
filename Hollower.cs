@@ -2,7 +2,7 @@ using System.IO;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
-namespace BatchHollower
+namespace Seion.BatchHollower
 {
     public class Hollower
     {

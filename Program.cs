@@ -2,7 +2,7 @@
 using System.IO;
 using System.Linq;
 
-namespace BatchHollower
+namespace Seion.BatchHollower
 {
     class Program
     {
