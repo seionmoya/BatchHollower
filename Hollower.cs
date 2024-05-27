@@ -41,6 +41,11 @@ namespace Seion.BatchHollower
 
         public void HollowMethods(TypeDefinition type)
         {
+            if (type == null)
+            {
+                return;
+            }
+
             if (!type.HasMethods)
             {
                 return;
@@ -54,6 +59,11 @@ namespace Seion.BatchHollower
 
         public void HollowProperties(TypeDefinition type)
         {
+            if (type == null)
+            {
+                return;
+            }
+
             if (!type.HasProperties)
             {
                 return;
