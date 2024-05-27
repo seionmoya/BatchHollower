@@ -1,4 +1,3 @@
-using System.IO;
 using Mono.Cecil;
 using Mono.Cecil.Rocks;
 
@@ -6,9 +5,20 @@ namespace Seion.BatchHollower
 {
     public class Hollower
     {
-        public void HollowAssembly(string inputFile, string outputFile)
+        public AssemblyDefinition GetAssemblyDefinition(string inputPath, string inputFile)
         {
-            using (var assembly = GetAssemblyDefinition(inputFile))
+            var resolver = new DefaultAssemblyResolver();
+            var parameters = new ReaderParameters();
+
+            resolver.AddSearchDirectory(inputPath);            
+            parameters.AssemblyResolver = resolver;
+
+            return AssemblyDefinition.ReadAssembly(inputFile, parameters);
+        }
+
+        public void HollowAssembly(string inputPath, string inputFile, string outputFile)
+        {
+            using (var assembly = GetAssemblyDefinition(inputPath, inputFile))
             {
                 var types = assembly.MainModule.GetAllTypes();
 
@@ -19,18 +29,6 @@ namespace Seion.BatchHollower
 
                 assembly.Write(outputFile);
             }
-        }
-
-        public AssemblyDefinition GetAssemblyDefinition(string inputFile)
-        {
-            var resolver = new DefaultAssemblyResolver();
-            var parameters = new ReaderParameters();
-            var inputPath = Path.GetDirectoryName(inputFile);
-
-            resolver.AddSearchDirectory(inputPath);            
-            parameters.AssemblyResolver = resolver;
-
-            return AssemblyDefinition.ReadAssembly(inputFile, parameters);
         }
 
         public void HollowType(TypeDefinition type)

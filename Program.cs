@@ -15,12 +15,14 @@ namespace Seion.BatchHollower
 
         static void Main()
         {
+            var hollower = new Hollower();
+
             // TODO: launch arguments
             var inputPath = "Managed";
             var outputPath = "Hollowed";
 
+            // TODO: support child folder lookup
             var files = new DirectoryInfo(inputPath).GetFiles();
-            var hollower = new Hollower();
 
             foreach (var fi in files)
             {
@@ -34,7 +36,7 @@ namespace Seion.BatchHollower
                 }
 
                 Console.WriteLine($"Hollowing {inputFile}...");                
-                hollower.HollowAssembly(inputFile, outputFile);
+                hollower.HollowAssembly(inputPath, inputFile, outputFile);
             }
         }
 
