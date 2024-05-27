@@ -16,21 +16,23 @@ namespace BatchHollower
         static void Main()
         {
             // TODO: launch arguments
+
             var inputPath = "Managed";
             var outputPath = "Hollowed";
-
-            // Don't load .gitignore files
-            var files = new DirectoryInfo(inputPath)
-                .GetFiles()
-                .Where(x => !_blacklist.Contains(x.Name)
-                    && x.Extension == ".dll");
-
+            
+            var files = new DirectoryInfo(inputPath).GetFiles();
             var hollower = new Hollower();
 
             foreach (var fi in files)
             {
                 var inputFile = fi.FullName;
                 var outputFile = GetOutputFilepath(inputFile, outputPath);
+
+                if (!inputFile.Contains(".dll") || _blacklist.Contains(inputFile)) 
+                {
+                    Console.WriteLine($"Skipping {inputFile}...");    
+                    continue;
+                }
 
                 Console.WriteLine($"Hollowing {inputFile}...");                
                 hollower.HollowAssembly(inputFile, outputFile);
