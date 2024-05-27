@@ -80,6 +80,7 @@ namespace Seion.BatchHollower
             if (method.HasBody)
             {
                 method.Body.Instructions.Clear();
+                method.Body.Variables.Clear();
             }
         }
     }
