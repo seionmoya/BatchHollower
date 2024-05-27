@@ -16,10 +16,9 @@ namespace Seion.BatchHollower
         static void Main()
         {
             // TODO: launch arguments
-
             var inputPath = "Managed";
             var outputPath = "Hollowed";
-            
+
             var files = new DirectoryInfo(inputPath).GetFiles();
             var hollower = new Hollower();
 
