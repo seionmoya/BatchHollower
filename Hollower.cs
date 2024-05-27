@@ -61,20 +61,18 @@ namespace Seion.BatchHollower
 
             foreach (var property in type.Properties)
             {
-                if (property.GetMethod != null)
-                {
-                    HollowMethod(property.GetMethod);
-                }
-
-                if (property.SetMethod != null)
-                {
-                    HollowMethod(property.SetMethod);
-                }
+                HollowMethod(property.GetMethod);
+                HollowMethod(property.SetMethod);
             }
         }
 
         public void HollowMethod(MethodDefinition method)
         {
+            if (method == null)
+            {
+                return;
+            }
+
             if (!method.HasBody)
             {
                 return;
