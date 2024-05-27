@@ -8,29 +8,31 @@ namespace BatchHollower
     {
         public void HollowAssembly(string inputFile, string outputFile)
         {
-            var inputPath = Path.GetDirectoryName(inputFile);
-            using var assembly = GetAssemblyDefinition(inputPath, inputFile);
-            var types = assembly.MainModule.GetAllTypes();
-
-            foreach (var type in types)
+            using (var assembly = GetAssemblyDefinition(inputFile))
             {
-                HollowType(type);
-            }
+                var types = assembly.MainModule.GetAllTypes();
 
-            assembly.Write(outputFile);
+                foreach (var type in types)
+                {
+                    HollowType(type);
+                }
+
+                assembly.Write(outputFile);
+            }
         }
 
-        public AssemblyDefinition GetAssemblyDefinition(string inputPath, string filePath)
+        public AssemblyDefinition GetAssemblyDefinition(string inputFile)
         {
-            var assemblyResolver = new DefaultAssemblyResolver();
-            assemblyResolver.AddSearchDirectory(inputPath);
+            var inputPath = Path.GetDirectoryName(inputFile);
+            var resolver = new DefaultAssemblyResolver();
+            resolver.AddSearchDirectory(inputPath);
 
-            var readerParameters = new ReaderParameters
+            var parameters = new ReaderParameters
             {
-                AssemblyResolver = assemblyResolver
+                AssemblyResolver = resolver
             };
 
-            return AssemblyDefinition.ReadAssembly(filePath, readerParameters);
+            return AssemblyDefinition.ReadAssembly(inputFile, parameters);
         }
 
         public void HollowType(TypeDefinition type)
