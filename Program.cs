@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using Mono.Cecil;
+using Mono.Cecil.Rocks;
 
 namespace BatchHollower
 {
@@ -11,65 +12,111 @@ namespace BatchHollower
         [
             "Mono.Posix.dll",
             "mscorlib.dll",
-            "System.Xml.Linq.dll",
+            "System.Xml.Linq.dll"
         ];
 
         static void Main()
         {
-            var files = new DirectoryInfo("./Managed")
+            var inputPath = "Managed";
+            var outputPath = "Hollowed";
+
+            // Don't load .gitignore files
+            var files = new DirectoryInfo(inputPath)
                 .GetFiles()
                 .Where(x => !_blacklist.Contains(x.Name)
                     && x.Extension == ".dll");
 
             foreach (var fi in files)
             {
-                var filepath = fi.FullName;
+                var filePath = fi.FullName;
+                Console.WriteLine($"Hollowing {filePath}...");
+                HollowAssembly(inputPath, outputPath, filePath);
+            }
+        }
 
-                Console.WriteLine($"Hollowing {filepath}...");
+        static void HollowAssembly(string inputPath, string outputPath, string filePath)
+        {
+            using var assembly = GetAssemblyDefinition(inputPath, filePath);
+            var types = assembly.MainModule.GetAllTypes();
 
-                try
+            foreach (var type in types)
+            {
+                HollowMethods(type);
+                HollowProperties(type);
+            }
+
+            assembly.Write(GetOutputFilepath(outputPath, filePath));
+        }
+
+        static AssemblyDefinition GetAssemblyDefinition(string inputPath, string filePath)
+        {
+            var assemblyResolver = new DefaultAssemblyResolver();
+            assemblyResolver.AddSearchDirectory(inputPath);
+
+            var readerParameters = new ReaderParameters
+            {
+                AssemblyResolver = assemblyResolver
+            };
+
+            return AssemblyDefinition.ReadAssembly(filePath, readerParameters);
+        }
+
+        static void HollowMethods(TypeDefinition type)
+        {
+            if (!type.HasMethods)
+            {
+                return;
+            }
+
+            foreach (var method in type.Methods)
+            {
+                HollowMethod(method);
+            }
+        }
+
+        static void HollowProperties(TypeDefinition type)
+        {
+            if (!type.HasProperties)
+            {
+                return;
+            }
+
+            foreach (var property in type.Properties)
+            {
+                if (property.GetMethod != null)
                 {
-                    HollowAssembly(filepath);
+                    HollowMethod(property.GetMethod);
                 }
-                catch (AssemblyResolutionException)
+
+                if (property.SetMethod != null)
                 {
-                    Console.Error.WriteLine("WARNING: Cannot be resolved, might be obfuscated.");
+                    HollowMethod(property.SetMethod);
                 }
             }
         }
 
-        static void HollowAssembly(string filepath)
+        static void HollowMethod(MethodDefinition method)
         {
-            var data = File.ReadAllBytes(filepath);
-            using var ms = new MemoryStream(data);
-            var module = ModuleDefinition.ReadModule(ms);
-
-            foreach (var type in module.Types)
+            try
             {
-                if (!type.HasMethods)
+                if (method.HasBody)
                 {
-                    continue;
-                }
-
-                foreach (var method in type.Methods)
-                {
-                    try
-                    {
-                        if (method.HasBody)
-                        {
-                            method.Body.Instructions.Clear();
-                        }
-                    }
-                    catch (IndexOutOfRangeException)
-                    {
-                        // Something gone wrong inside Mono.Cecil.
-                        // IL appears to be cleared.
-                    }
+                    method.Body.Instructions.Clear();
                 }
             }
+            catch (IndexOutOfRangeException)
+            {
+                // Something gone wrong inside Mono.Cecil.
+                // IL appears to be cleared.
+            }
+        }
 
-            module.Write();
-            File.WriteAllBytes(filepath, ms.ToArray());
+        static string GetOutputFilepath(string outputPath, string filePath)
+        {
+            return Path.Combine(
+                Environment.CurrentDirectory,
+                outputPath,
+                Path.GetFileNameWithoutExtension(filePath) + "-hollowed.dll");
         }
     }
 }
