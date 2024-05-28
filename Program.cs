@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 
 namespace Seion.BatchHollower
 {
@@ -8,9 +7,11 @@ namespace Seion.BatchHollower
     {
         static readonly string[] _blacklist =
         [
-            "Mono.Posix.dll",
-            "mscorlib.dll",
-            "System.Xml.Linq.dll"
+            "Mono.",            // All mono dlls
+            "mscorlib.dll",     // Single match
+            "netstandard.dll",  // Single match
+            "System.",          // All system dlls
+            "UnityEngine."      // All unityengine dlls
         ];
 
         static void Main()
@@ -29,7 +30,7 @@ namespace Seion.BatchHollower
                 var inputFile = fi.FullName;
                 var outputFile = GetOutputFilepath(inputFile, outputPath);
 
-                if (fi.Extension != ".dll" || _blacklist.Contains(fi.Name)) 
+                if (IsOnBlacklist(fi)) 
                 {
                     Console.WriteLine($"Skipping {inputFile}...");    
                     continue;
@@ -40,10 +41,29 @@ namespace Seion.BatchHollower
             }
         }
 
+        static bool IsOnBlacklist(FileInfo fi)
+        {
+            if (fi.Extension != ".dll")
+            {
+                return true;
+            }
+
+            foreach (var name in _blacklist)
+            {
+                if (fi.Name.StartsWith(name))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         static string GetOutputFilepath(string inputFile, string outputPath)
         {
             var fileName = Path.GetFileName(inputFile);
 
+            // TODO: support child folder lookup
             return Path.Combine(
                 Environment.CurrentDirectory,
                 outputPath,

@@ -18,3 +18,8 @@ Hollow multiple .NET assemblies at once.
   - From source: `dotnet run`
   - From exe: `Seion.BatchHollower.exe`
 3. Result is located in `Hollowed/`
+
+## Notes
+
+It only hollows relevant assemblies for Escape From Tarkov.
+In case you want to use it for a different project, modify the blacklist.
